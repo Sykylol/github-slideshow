@@ -1,0 +1,483 @@
+{\rtf1\ansi\ansicpg1250\cocoartf2511
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 HelveticaNeue-Bold;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww18040\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 /*\
+Aquapark\
+\
+ Program m\'e1 slou\'9eit pro evidenci tr\'9eeb na pokladn\uc0\u283  p\u345 i vstupu do aquaparku.\
+    Eviduje dva druhy \uc0\u269 ip\u367  - abonentn\'ed(1) a jednor\'e1zov\'e9(2).\
+ Na abonentn\'ed \uc0\u269 ip mus\'edte vlo\'9eit minim\'e1ln\u283  80 k\u269  p\u345 i prvn\'edm vstupu, ode\u269 \'edt\'e1 1k\u269 /h a dovoluje dluh a\'9e -200k\u269 \
+    p\uc0\u345 i p\u345 ekro\u269 en\'ed limitu za posledn\'ed n\'e1v\'9at\u283 vu.\
+ Jednor\'e1zov\'fd \uc0\u269 ip stoj\'ed 85k\u269 /1h, 145k\u269 /2h, 200k\u269 /3h a za ka\'9edou minutu nav\'edc doplat\'edte 1,5k\u269  na m\'edst\u283 .\
+    Syst\'e9m eviduje celkov\'fd po\uc0\u269 et p\u345 \'edchoz\'edch n\'e1v\'9at\u283 vn\'edk\u367  a tr\'9ebu.\
+        Rozli\'9auje v evidenci jednor\'e1zov\'e9 a abonentn\'ed \uc0\u269 ipy.\
+    P\uc0\u345 i skon\u269 en\'ed programu (5 konec) zobraz\'ed tuto celou evidenci a spo\u269 \'edt\'e1 celkov\'fd obrat.\
+ Syst\'e9m se bude ovl\'e1dat pomoc\'ed menu:\
+    1 Dobit kredit na abonentni cip\
+    2 Nastavit jednorazovy cip\
+    3 Vstup do aquaparku\
+    4 Opusteni aquaparku\
+    5 Konec\
+ */\
+\
+#include <iostream>\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+
+\f1\b \cf0 const
+\f0\b0  
+\f1\b int
+\f0\b0  h1 = 85; //cena pro jednor\'e1zov\'fd \uc0\u269 ip 85k\u269 /h\
+
+\f1\b const
+\f0\b0  
+\f1\b int
+\f0\b0  h2 = 145;\
+
+\f1\b const
+\f0\b0  
+\f1\b int
+\f0\b0  h3 = 200;\
+
+\f1\b const
+\f0\b0  
+\f1\b int
+\f0\b0  hodina = 60; //minut\
+
+\f1\b const
+\f0\b0  
+\f1\b int
+\f0\b0  abonentniMinimum = 80;\
+
+\f1\b int
+\f0\b0  celkovyObrat = 0; //uk\'e1\'9ee se p\uc0\u345 i akci pod \u269 \'edslem 5 "konec"\
+
+\f1\b int
+\f0\b0  pocetNavstevniku = 0; //uk\'e1\'9ee se p\uc0\u345 i akci pod \u269 \'edslem 5 "konec"\
+
+\f1\b int
+\f0\b0  cisloAkce;\
+
+\f1\b int
+\f0\b0  zadaneID;\
+
+\f1\b int
+\f0\b0  zadanaCastka;\
+
+\f1\b int
+\f0\b0  zadanychHodin;\
+
+\f1\b int
+\f0\b0  minutVArealu;\
+
+\f1\b int
+\f0\b0  dluh;\
+\
+
+\f1\b struct
+\f0\b0  Cip \{\
+    
+\f1\b int
+\f0\b0  cipID;\
+    
+\f1\b int
+\f0\b0  zustatek;\
+    
+\f1\b bool
+\f0\b0  jeUvnitr;\
+    
+\f1\b int
+\f0\b0  naJakDlouho;\
+    
+\f1\b float
+\f0\b0  minutNavic;\
+    
+\f1\b int
+\f0\b0  pocetNavstevniku = 0;\
+    
+\f1\b int
+\f0\b0  celkovyObrat = 0;\
+\}abonentni, jednorazovy; // abonentni[10], jednorayovy[10]\
+\
+\
+
+\f1\b void
+\f0\b0  setup() \{\
+    abonentni.cipID = 1;\
+    abonentni.zustatek = 0;\
+    abonentni.jeUvnitr = 
+\f1\b false
+\f0\b0 ;\
+    abonentni.minutNavic = 1;\
+    abonentni.pocetNavstevniku = 0;\
+    abonentni.celkovyObrat = 0;\
+    \
+    jednorazovy.cipID = 2;\
+    jednorazovy.zustatek = 0;\
+    jednorazovy.jeUvnitr = 
+\f1\b false
+\f0\b0 ;\
+    jednorazovy.naJakDlouho = 0;\
+    jednorazovy.minutNavic = 1.5;\
+    jednorazovy.pocetNavstevniku = 0;\
+    jednorazovy.celkovyObrat = 0;\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  menu() \{\
+    printf("Vyberte pozadovanou akci pomoci zadani prislusneho cisla\\n");\
+    printf("1 Dobit kredit na abonentni cip\\n");\
+    printf("2 Nastavit jednorazovy cip\\n");\
+    printf("3 Vstup do aquaparku\\n");\
+    printf("4 Opusteni aquaparku\\n");\
+    printf("5 Konec\\n\\n");\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  dobitAbonentni()\{\
+    printf("Zadejte ID abonentniho cipu (1): ");\
+    scanf("%d", &zadaneID);\
+    getchar();\
+    
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID && abonentni.jeUvnitr == 
+\f1\b false
+\f0\b0 ) \{ //cislo 1\
+        printf("Zadejte castku, kterou jste pridali na abonentni cip: ");\
+        scanf("%d", &zadanaCastka);\
+        getchar();\
+        abonentni.zustatek += zadanaCastka;\
+        abonentni.celkovyObrat += zadanaCastka;\
+        printf("Vas celkovy zustatek je %d kc\\n", abonentni.zustatek);\
+    \} 
+\f1\b else
+\f0\b0  \{\
+        
+\f1\b if
+\f0\b0 (zadaneID != abonentni.cipID)\
+            printf("Chybne zadane ID\\n");\
+        
+\f1\b else
+\f0\b0 \
+            printf("Cip je jiz v arealu"); // abonentni.jeUvnitr == true;\
+    \}\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  dobitJednorazovy() \{\
+    printf("Zadejte ID jednorazoveho cipu (2): ");\
+    scanf("%d", &zadaneID);\
+    getchar();\
+    
+\f1\b if
+\f0\b0 (jednorazovy.zustatek == 0) \{\
+        
+\f1\b if
+\f0\b0 (zadaneID == jednorazovy.cipID && jednorazovy.jeUvnitr == 
+\f1\b false
+\f0\b0 ) \{ // cislo 2\
+            printf("Vyberte pocet hodin klavesou 1-3\\n1: 1h ... 85 kc\\n2: 2h ... 145kc\\n3: 3h ... 200kc\\n");\
+            scanf("%d",&zadanychHodin);\
+            getchar();\
+            
+\f1\b switch
+\f0\b0 (zadanychHodin) \{\
+                
+\f1\b case
+\f0\b0  1:\
+                    printf("Bylo vybrano 1h ...  85 kc\\n");\
+                    jednorazovy.zustatek += h1;\
+                    jednorazovy.naJakDlouho = (1 * hodina);\
+                    jednorazovy.celkovyObrat += jednorazovy.zustatek;\
+                    
+\f1\b break
+\f0\b0 ;\
+                
+\f1\b case
+\f0\b0  2:\
+                    printf("Bylo vybrano 2h ... 145 kc\\n");\
+                    jednorazovy.zustatek += h2;\
+                    jednorazovy.naJakDlouho = (2 * hodina);\
+                    jednorazovy.celkovyObrat += jednorazovy.zustatek;\
+                    
+\f1\b break
+\f0\b0 ;\
+                
+\f1\b case
+\f0\b0  3:\
+                    printf("Bylo vybrano 3h ... 200 kc\\n");\
+                    jednorazovy.zustatek += h3;\
+                    jednorazovy.naJakDlouho = (3 * hodina);\
+                    jednorazovy.celkovyObrat += jednorazovy.zustatek;\
+                    
+\f1\b break
+\f0\b0 ;\
+                
+\f1\b default
+\f0\b0 :\
+                    printf("Nebylo vybrano cislo od 1 do 3, nebo je cip jiz v arealu\\n");\
+                    
+\f1\b break
+\f0\b0 ;\
+            \}\
+        \} 
+\f1\b else
+\f0\b0  \{\
+            
+\f1\b if
+\f0\b0 (zadaneID != jednorazovy.cipID)\
+                printf("Chybne zadane ID\\n");\
+            
+\f1\b else
+\f0\b0 \
+                printf("Cip je jiz v arealu"); // abonentni.jeUvnitr == true;\
+        \}\
+    \} 
+\f1\b else
+\f0\b0 \
+        printf("Zadane ID je jiz nastaveno na %dh\\n", jednorazovy.naJakDlouho/hodina);\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  vstup() \{\
+    printf("Zadejte ID cipu: ");\
+    scanf("%d", &zadaneID);\
+    getchar();\
+    
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID || zadaneID == jednorazovy.cipID) \{\
+        
+\f1\b if
+\f0\b0 ((zadaneID == abonentni.cipID && abonentni.jeUvnitr == 
+\f1\b false
+\f0\b0 ) || (zadaneID == jednorazovy.cipID && jednorazovy.jeUvnitr == 
+\f1\b false
+\f0\b0 )) \{\
+            
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID && abonentni.jeUvnitr == 
+\f1\b false
+\f0\b0 )\{\
+                
+\f1\b if
+\f0\b0 (abonentni.zustatek >= abonentniMinimum) \{\
+                    printf("Bylo vam odecteno %d kc z vaseho cipu pri vstupu do arealu, vas zustatek je %d kc\\n", abonentniMinimum, (abonentni.zustatek- abonentniMinimum));\
+                    abonentni.jeUvnitr = 
+\f1\b true
+\f0\b0 ;\
+                    abonentni.pocetNavstevniku ++;\
+                \} 
+\f1\b else
+\f0\b0 \
+                    printf("Vas zustatek je %d kc a pro vstup potrebujete minimalne %d kc\\n", (abonentni.zustatek), abonentniMinimum);\
+            \} 
+\f1\b else
+\f0\b0  \{ // jednorazovy cip\
+                
+\f1\b if
+\f0\b0 (jednorazovy.naJakDlouho > 0) \{\
+                    printf("Bylo vam odecteno %d kc z vaseho jednorazoveho cipu pri vstupu do arealu\\n", jednorazovy.zustatek);\
+                    jednorazovy.jeUvnitr = 
+\f1\b true
+\f0\b0 ;\
+                    jednorazovy.pocetNavstevniku ++;\
+                    jednorazovy.zustatek = 0;\
+                \} 
+\f1\b else
+\f0\b0 \
+                    printf("Nedostatek kreditu\\n");\
+            \}\
+        \} 
+\f1\b else
+\f0\b0 \
+            printf("Toto ID uz je v arealu\\n");\
+    \} 
+\f1\b else
+\f0\b0 \
+        printf("Neplatne zadani ID cipu\\n");\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  vystup() \{\
+    printf("Zadejte cislo cipu(1)(2): ");\
+    scanf("%d", &zadaneID);\
+    getchar();\
+    
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID || zadaneID == jednorazovy.cipID) \{\
+        
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID) \{\
+            
+\f1\b if
+\f0\b0 (zadaneID == abonentni.cipID && abonentni.jeUvnitr == 
+\f1\b true
+\f0\b0 ) \{\
+                printf("Zadejte pocet minut v arealu: ");\
+                scanf("%d", &minutVArealu);\
+                getchar();\
+                
+\f1\b if
+\f0\b0 (minutVArealu > 0 && minutVArealu < 1440) \{ // 24h * 60m = 1440 minut za den\
+                    
+\f1\b if
+\f0\b0 (minutVArealu > hodina) \{\
+                        dluh = ((minutVArealu - hodina) * abonentni.minutNavic);\
+                        abonentni.zustatek -= (abonentniMinimum + dluh);\
+                        printf("Vas zustatek je %d kc ... pro dalsi vstup mejte ucet nabity minimalne na %d kc\\n", abonentni.zustatek, abonentniMinimum);\
+                    \} 
+\f1\b else
+\f0\b0  \{\
+                        abonentni.zustatek -= abonentniMinimum;\
+                        printf("Vas zustatek je %d kc ... pro dalsi vstup mejte ucet nabity minimalne na %d kc\\n", abonentni.zustatek, abonentniMinimum);\
+                    \}\
+                    abonentni.jeUvnitr = 
+\f1\b false
+\f0\b0 ;\
+                \} 
+\f1\b else
+\f0\b0 \
+                    printf("Chybne zadani minut v arealu\\n");\
+            \} 
+\f1\b else
+\f0\b0 \
+                printf("Tento cip neni v arealu\\n");\
+        \} 
+\f1\b else
+\f0\b0  \{ // jednorazovy cip\
+            
+\f1\b if
+\f0\b0 (zadaneID == jednorazovy.cipID && jednorazovy.jeUvnitr == 
+\f1\b true
+\f0\b0 ) \{\
+                printf("Zadejte pocet minut v arealu: ");\
+                scanf("%d", &minutVArealu);\
+                getchar();\
+                
+\f1\b if
+\f0\b0 (minutVArealu > 0 && minutVArealu < 1440) \{ // 24h * 60m = 1440 minut za den\
+                    
+\f1\b if
+\f0\b0 (minutVArealu > jednorazovy.naJakDlouho) \{\
+                        dluh = (minutVArealu - jednorazovy.naJakDlouho) * jednorazovy.minutNavic;\
+                        printf("Vas dluh je %d kc ... pred odchodem prosim uhradte tuto castku\\n", dluh);\
+                        jednorazovy.celkovyObrat += dluh; // s predpokladem, ze zakaznik vzdy a hned svuj dluh uhradi\
+                    \}\
+                    jednorazovy.zustatek = 0;\
+                    printf("Muzete opustit areal\\n");\
+                    jednorazovy.jeUvnitr = 
+\f1\b false
+\f0\b0 ;\
+                \} 
+\f1\b else
+\f0\b0 \
+                    printf("Chybne zadani minut v arealu\\n");\
+            \} 
+\f1\b else
+\f0\b0 \
+                printf("Cip neni v arealu\\n");\
+        \}\
+    \} 
+\f1\b else
+\f0\b0 \
+        printf("Chybne zadane ID cipu\\n");\
+\}\
+\
+\
+
+\f1\b void
+\f0\b0  vyberAkce() \{\
+    scanf("%d", &cisloAkce);\
+    getchar();\
+    
+\f1\b if
+\f0\b0 (cisloAkce > 0 && cisloAkce < 6) \{\
+        
+\f1\b switch
+\f0\b0 (cisloAkce) \{\
+            
+\f1\b case
+\f0\b0  1:\
+                dobitAbonentni();\
+                printf("Stisknutim klavesy enter prejdete do hlavniho menu\\n\\n");\
+                getchar();\
+                
+\f1\b break
+\f0\b0 ;\
+            
+\f1\b case
+\f0\b0  2:\
+                dobitJednorazovy();\
+                printf("Stisknutim klavesy enter prejdete do hlavniho menu\\n\\n");\
+                getchar();\
+                
+\f1\b break
+\f0\b0 ;\
+            
+\f1\b case
+\f0\b0  3:\
+                vstup();\
+                printf("Stisknutim klavesy enter prejdete do hlavniho menu\\n\\n");\
+                getchar();\
+                
+\f1\b break
+\f0\b0 ;\
+            
+\f1\b case
+\f0\b0  4:\
+                vystup();\
+                printf("Stisknutim klavesy enter prejdete do hlavniho menu\\n\\n");\
+                getchar();\
+                
+\f1\b break
+\f0\b0 ;\
+            
+\f1\b case
+\f0\b0  5:\
+                
+\f1\b break
+\f0\b0 ;\
+        \}\
+    \} 
+\f1\b else
+\f0\b0 \
+        printf("Cislo akce bylo zadano chybne\\n\\n");\
+\}\
+\
+\
+
+\f1\b int
+\f0\b0  main() \{\
+    setup();\
+    
+\f1\b do
+\f0\b0  \{\
+        menu();\
+        vyberAkce();\
+    \} 
+\f1\b while
+\f0\b0 (cisloAkce != 5);\
+    pocetNavstevniku = jednorazovy.pocetNavstevniku + abonentni.pocetNavstevniku;\
+    celkovyObrat = jednorazovy.celkovyObrat + abonentni.celkovyObrat;\
+    printf("Pocet jednorazovych navstevniku byl %d a abonentnich navstevniku %d \\n", jednorazovy.pocetNavstevniku, abonentni.pocetNavstevniku);\
+    printf("Celkovy pocet vstoupeni do arealu byl %d\\n", pocetNavstevniku); // pocet navstevniku nedava moc smysl protoze stejny navstevnik mohl prijit treba 100x\
+    printf("Jednorazovy obrat je %d kc a abonentni obrat je %d kc\\n", jednorazovy.celkovyObrat, abonentni.celkovyObrat);\
+    printf("Celkovy obrat je %d kc\\n", celkovyObrat);\
+    
+\f1\b return
+\f0\b0  0;\
+\}}
